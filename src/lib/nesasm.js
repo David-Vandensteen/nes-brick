@@ -1,3 +1,4 @@
+/*
 import { spawn } from 'child_process';
 
 const { log } = console;
@@ -16,3 +17,4 @@ export default (...args) => new Promise((resolve, reject) => {
     reject(code);
   });
 });
+*/
