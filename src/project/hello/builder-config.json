@@ -1,0 +1,5 @@
+{
+  "file": "hello.s",
+  "executable": "cc65",
+  "params": "--verbose --target nes -o hello.nes"
+}

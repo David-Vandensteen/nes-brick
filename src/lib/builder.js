@@ -5,7 +5,12 @@ import { writeFileSync } from 'fs';
 
 const { log, error } = console;
 
-export default ({ file, code }, { executable, params }) => new Promise((resolve, reject) => {
+export default ({
+  file,
+  code,
+  executable,
+  params,
+}) => new Promise((resolve, reject) => {
   let pFile = file;
   if (code) {
     pFile = join(process.env.TEMP || '/tmp', `nesbrick-${uid()}.asm`);

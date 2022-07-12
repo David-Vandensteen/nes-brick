@@ -1,11 +1,3 @@
-import builder from '#src/lib/builder';
-import { Fceux } from '#src/lib/fceux';
-
-const { error } = console;
-
-const nesFile = 'c:\\temp\\nes\\hello\\helloworld.nes';
-
-const asm = `
 ;*********************************************
 ; NES Hello World
 ; Made by: Pedro A. Fabri
@@ -174,21 +166,3 @@ sprites:
   .org $0000
 
   .incbin "C:\\temp\\nes\\hello\\mario.chr"   ;includes 8KB graphics file from SMB1
-`;
-
-const nesasmConfig = { code: asm, executable: 'NESASM3' };
-const cc65Config = { code: asm, executable: 'cc65', params: '--verbose --target nes -o demo.nes' };
-
-builder(nesasmConfig)
-  .then(() => {
-    const fceux = new Fceux({ bin: 'C:\\Users\\davidv\\Documents\\fceux\\fceux.exe' });
-    fceux.start(nesFile);
-  })
-  .catch(error);
-
-builder(cc65Config)
-  .then(() => {
-    const fceux = new Fceux({ bin: 'C:\\Users\\davidv\\Documents\\fceux\\fceux.exe' });
-    fceux.start(nesFile);
-  })
-  .catch(error);
