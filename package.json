@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
+    "start": "node src/index.js",
     "lint": "eslint src"
   },
   "repository": {
@@ -13,6 +14,9 @@
   },
   "author": "David Vandensteen <dvandensteen@gmail.com>",
   "license": "MIT",
+  "imports": {
+    "#src/*": "./src/*.js"
+  },
   "bugs": {
     "url": "https://github.com/David-Vandensteen/nes-brick/issues"
   },
