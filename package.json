@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/index.js",
     "lint": "eslint src",
-    "test:build-and-run": "node test/build-and-run.js"
+    "test:build-and-run": "node test/build-and-run.js",
+    "test:asm-writer" : "node test/asmWriter.js"
   },
   "repository": {
     "type": "git",
