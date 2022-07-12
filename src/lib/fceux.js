@@ -1,6 +1,8 @@
 /* eslint-disable lines-between-class-members */
 import { spawn } from 'child_process';
 
+const { log } = console;
+
 class Fceux {
   #bin;
   #process;
@@ -10,6 +12,7 @@ class Fceux {
   }
 
   start(...args) {
+    log('launch fceux ', args);
     this.#process = spawn(this.#bin, args);
     return this.#process;
   }
