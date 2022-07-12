@@ -1,0 +1,36 @@
+{
+  "name": "nes-brick",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "lint": "eslint src",
+    "test:build-and-run": "node test/build-and-run.js",
+    "test:asm-writer": "node test/asmWriter.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/David-Vandensteen/nes-brick.git"
+  },
+  "author": "David Vandensteen <dvandensteen@gmail.com>",
+  "license": "MIT",
+  "imports": {
+    "#src/*": "./src/*.js",
+    "#test/*": "./src/*.js"
+  },
+  "bugs": {
+    "url": "https://github.com/David-Vandensteen/nes-brick/issues"
+  },
+  "homepage": "https://github.com/David-Vandensteen/nes-brick#readme",
+  "devDependencies": {
+    "eslint": "^8.19.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-plugin-import": "^2.26.0"
+  },
+  "dependencies": {
+    "uid": "^2.0.0"
+  }
+}
