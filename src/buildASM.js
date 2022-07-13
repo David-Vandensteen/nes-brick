@@ -1,5 +1,6 @@
 import path from 'path';
 import builder from '#src/lib/builder';
+import { Emulator } from '#src/lib/emulator';
 
 const { parse, join } = path;
 
@@ -11,9 +12,13 @@ const build = ({ configFile }) => {
     .then((data) => {
       config = { ...data.default };
       log('config', config);
-      config.file = `${join(parse(configFile).dir, config.file)}`;
+      config.builder.file = `${join(parse(configFile).dir, config.builder.file)}`;
       log('config', config);
-      builder(config)
+      builder(config.builder)
+        .then(() => {
+          const emulator = new Emulator(config.emulator);
+          emulator.start();
+        })
         .catch(error);
     });
 };
