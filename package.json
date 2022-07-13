@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "start:hello": "npm run start -- src/project/hello/config.js",
+    "start:hello": "npm run start -- src/project/hello/config.mjs",
     "lint": "eslint src",
     "test:build-and-run": "node test/build-and-run.js",
     "test:asm-writer": "node test/asmWriter.js"
