@@ -1,6 +1,6 @@
 /* eslint-disable no-tabs */
 import builder from '#src/lib/builder';
-import { Fceux } from '#src/lib/fceux';
+import { Emulator } from '#src/lib/emulator';
 
 const { error } = console;
 
@@ -161,11 +161,21 @@ palettes:
   .byte %01111110
   .byte $00, $00, $00, $00, $00, $00, $00, $00`;
 
-const config = { code: codeSource, executable: 'C:\\cc65\\bin\\cl65', params: `--verbose --target nes -o ${outputBin}` };
+const config = {
+  emulator: {
+    file: `${process.env.TEMP}\\hello.nes`,
+    executable: 'C:\\Users\\davidv\\Documents\\fceux\\fceux.exe',
+  },
+  builder: {
+    code: codeSource,
+    executable: 'C:\\cc65\\bin\\cl65',
+    params: `--verbose --target nes -o ${outputBin}`,
+  },
+};
 
-builder(config)
+builder(config.builder)
   .then(() => {
-    const fceux = new Fceux({ bin: 'C:\\Users\\davidv\\Documents\\fceux\\fceux.exe' });
-    fceux.start(outputBin);
+    const emulator = new Emulator(config.emulator);
+    emulator.start();
   })
   .catch(error);
