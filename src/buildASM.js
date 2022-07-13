@@ -2,13 +2,24 @@ import path from 'path';
 import builder from '#src/lib/builder';
 import { Emulator } from '#src/lib/emulator';
 
-const { parse, join } = path;
+const { log, error } = console;
+
+const {
+  parse,
+  join,
+  resolve,
+  sep,
+} = path;
 
 const build = ({ configFile }) => {
-  const { log, error } = console;
+  let configFileProcessed = configFile;
+  if (sep === '/') configFileProcessed = configFile;
+  if (sep === '\\') {
+    configFileProcessed = `file://${configFile}`;
+  }
 
   let config = {};
-  import(`../${configFile}`)
+  import(configFileProcessed)
     .then((data) => {
       config = { ...data.default };
       log('config', config);
@@ -23,4 +34,9 @@ const build = ({ configFile }) => {
     });
 };
 
-build({ configFile: process.argv[2] });
+if (!process.argv[2]) {
+  error('argment is missing');
+  process.exit(1);
+}
+const configFile = resolve(process.argv[2]);
+build({ configFile });
