@@ -1,12 +1,3 @@
-/* eslint-disable no-tabs */
-import builder from '#src/lib/builder';
-import { Fceux } from '#src/lib/fceux';
-
-const { error } = console;
-
-const outputBin = `${process.env.TEMP}\\hello.nes`;
-
-const codeSource = `
 .segment "HEADER"
   ; .byte "NES", $1A      ; iNES header identifier
   .byte $4E, $45, $53, $1A
@@ -159,13 +150,4 @@ palettes:
   .byte %11000011
   .byte %11100111
   .byte %01111110
-  .byte $00, $00, $00, $00, $00, $00, $00, $00`;
-
-const config = { code: codeSource, executable: 'C:\\cc65\\bin\\cl65', params: `--verbose --target nes -o ${outputBin}` };
-
-builder(config)
-  .then(() => {
-    const fceux = new Fceux({ bin: 'C:\\Users\\davidv\\Documents\\fceux\\fceux.exe' });
-    fceux.start(outputBin);
-  })
-  .catch(error);
+  .byte $00, $00, $00, $00, $00, $00, $00, $00

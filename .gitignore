@@ -1,3 +1,6 @@
+*.nes
+*.o
+
 # Logs
 logs
 *.log

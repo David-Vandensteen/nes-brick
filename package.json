@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
+    "build": "node src/buildASM.js",
+    "build:hello": "npm run build -- src/project/hello/builder-config.js",
     "lint": "eslint src",
     "test:build-and-run": "node test/build-and-run.js",
     "test:asm-writer": "node test/asmWriter.js"
