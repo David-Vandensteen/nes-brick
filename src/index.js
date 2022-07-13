@@ -1,14 +1,21 @@
 import nodemon from 'nodemon';
+import { parse } from 'path';
 
 const { log, error } = console;
+const { argv } = process;
 
 log('args', process.argv);
-if (!process.argv[2]) {
-  error('this script can t be call without argument');
+if (!argv[2]) {
+  error('argument is missing');
   process.exit(1);
 }
 
-nodemon({ script: 'src/buildASM.js', args: [process.argv[2]], ext: 's' }).on('start', () => {
+nodemon({
+  script: 'src/buildASM.js',
+  args: [argv[2]],
+  ext: 's',
+  watch: parse(argv[2]).dir,
+}).on('start', () => {
   log('nodemon started');
 }).on('crash', () => {
   log('script crashed for some reason');

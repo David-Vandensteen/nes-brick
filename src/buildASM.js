@@ -1,15 +1,13 @@
-import path from 'path';
-import builder from '#src/lib/builder';
-import { Emulator } from '#src/lib/emulator';
-
-const { log, error } = console;
-
-const {
+import {
   parse,
   join,
   resolve,
   sep,
-} = path;
+} from 'path';
+import builder from '#src/lib/builder';
+import { Emulator } from '#src/lib/emulator';
+
+const { log, error } = console;
 
 const build = ({ configFile }) => {
   let configFileProcessed = configFile;
