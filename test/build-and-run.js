@@ -1,194 +1,171 @@
+/* eslint-disable no-tabs */
 import builder from '#src/lib/builder';
 import { Fceux } from '#src/lib/fceux';
 
 const { error } = console;
 
-const nesFile = 'c:\\temp\\nes\\hello\\helloworld.nes';
+const outputBin = `${process.env.TEMP}\\hello.nes`;
 
-const asm = `
-;*********************************************
-; NES Hello World
-; Made by: Pedro A. Fabri
-; Based on Nerdy Nights Tutorials
-;*********************************************
+const codeSource = `
+.segment "HEADER"
+  ; .byte "NES", $1A      ; iNES header identifier
+  .byte $4E, $45, $53, $1A
+  .byte 2               ; 2x 16KB PRG code
+  .byte 1               ; 1x  8KB CHR data
+  .byte $01, $00        ; mapper 0, vertical mirroring
 
-;*********************************************
-; Variables
-;*********************************************
-  .rsset $0000
+.segment "VECTORS"
+  ;; When an NMI happens (once per frame if enabled) the label nmi:
+  .addr nmi
+  ;; When the processor first turns on or is reset, it will jump to the label reset:
+  .addr reset
+  ;; External interrupt IRQ (unused)
+  .addr 0
 
-;*********************************************
-; NES Header
-;*********************************************
-  .inesprg 1   ; 1x 16KB PRG code
-  .ineschr 1   ; 1x  8KB CHR data
-  .inesmap 0   ; mapper 0 = NROM, no bank swapping
-  .inesmir 1   ; background mirroring
+; "nes" linker config requires a STARTUP section, even if it's empty
+.segment "STARTUP"
 
+; Main code segement for the program
+.segment "CODE"
 
-;*********************************************
-; Bank 0
-;*********************************************
-  .bank 0
+reset:
+  sei		; disable IRQs
+  cld		; disable decimal mode
+  ldx #$40
+  stx $4017	; disable APU frame IRQ
+  ldx #$ff 	; Set up stack
+  txs		;  .
+  inx		; now X = 0
+  stx $2000	; disable NMI
+  stx $2001 	; disable rendering
+  stx $4010 	; disable DMC IRQs
 
-  .org $C000
+;; first wait for vblank to make sure PPU is ready
+vblankwait1:
+  bit $2002
+  bpl vblankwait1
 
-RESET:
-  SEI          ; disable IRQs
-  CLD          ; disable decimal mode
-  LDX #$40
-  STX $4017    ; disable APU frame IRQ
-  LDX #$FF
-  TXS          ; Set up stack
-  INX          ; now X = 0
-  STX $2000    ; disable NMI
-  STX $2001    ; disable rendering
-  STX $4010    ; disable DMC IRQs
+clear_memory:
+  lda #$00
+  sta $0000, x
+  sta $0100, x
+  sta $0200, x
+  sta $0300, x
+  sta $0400, x
+  sta $0500, x
+  sta $0600, x
+  sta $0700, x
+  inx
+  bne clear_memory
 
-  JSR vblankwait
+;; second wait for vblank, PPU is ready after this
+vblankwait2:
+  bit $2002
+  bpl vblankwait2
 
-clrmem:
-  LDA #$00
-  STA $0000, x
-  STA $0100, x
-  STA $0200, x
-  STA $0400, x
-  STA $0500, x
-  STA $0600, x
-  STA $0700, x
-  LDA #$FE
-  STA $0300, x
-  INX
-  BNE clrmem
+main:
+load_palettes:
+  lda $2002
+  lda #$3f
+  sta $2006
+  lda #$00
+  sta $2006
+  ldx #$00
+@loop:
+  lda palettes, x
+  sta $2007
+  inx
+  cpx #$20
+  bne @loop
 
-  JSR vblankwait
+enable_rendering:
+  lda #%10000000	; Enable NMI
+  sta $2000
+  lda #%00010000	; Enable Sprites
+  sta $2001
 
-;*********************************************
-; Load Palettes
-;*********************************************
-LoadPalettes:
-  LDA $2002             ; read PPU status to reset the high/low latch
-  LDA #$3F
-  STA $2006             ; write the high byte of $3F00 address
-  LDA #$00
-  STA $2006             ; write the low byte of $3F00 address
-  LDX #$00              ; start out at 0
-LoadPalettesLoop:
-  LDA palette, x        ; load data from address (palette + the value in x)
-  STA $2007             ; write to PPU
-  INX                   ; X = X + 1
-  CPX #$20              ; Compare X to hex $10, decimal 16 - copying 16 bytes = 4 sprites
-  BNE LoadPalettesLoop  ; Branch to LoadPalettesLoop if compare was Not Equal to zero
+forever:
+  jmp forever
 
-;*********************************************
-; Load Sprites
-;*********************************************
-LoadSprites:
-  LDX #$00              ; start at 0
-LoadSpritesLoop:
-  LDA sprites, x        ; load data from address (sprites +  x)
-  STA $0200, x          ; store into RAM address ($0200 + x)
-  INX                   ; X = X + 1
-  CPX #$28              ; Compare X to hex $14, decimal 20
-  BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
+nmi:
+  ldx #$00 	; Set SPR-RAM address to 0
+  stx $2003
+@loop:	lda hello, x 	; Load the hello message into SPR-RAM
+  sta $2004
+  inx
+  cpx #$1c
+  bne @loop
+  rti
 
-  LDA #%10001000        ; enable NMI, sprites from Pattern Table 1
-  STA $2000
+hello:
+  .byte $00, $00, $00, $00 	; Why do I need these here?
+  .byte $00, $00, $00, $00
+  .byte $6c, $00, $00, $6c
+  .byte $6c, $01, $00, $76
+  .byte $6c, $02, $00, $80
+  .byte $6c, $02, $00, $8A
+  .byte $6c, $03, $00, $94
 
-  LDA #%00010000        ; enable sprites
-  STA $2001
+palettes:
+  ; Background Palette
+  .byte $0f, $00, $00, $00
+  .byte $0f, $00, $00, $00
+  .byte $0f, $00, $00, $00
+  .byte $0f, $00, $00, $00
 
-;*********************************************
-; Main Logic
-;*********************************************
+  ; Sprite Palette
+  .byte $0f, $20, $00, $00
+  .byte $0f, $00, $00, $00
+  .byte $0f, $00, $00, $00
+  .byte $0f, $00, $00, $00
 
-Forever:
-  JMP Forever     ;jump back to Forever, infinite loop
+; Character memory
+.segment "CHARS"
+  .byte %11000011	; H (00)
+  .byte %11000011
+  .byte %11000011
+  .byte %11111111
+  .byte %11111111
+  .byte %11000011
+  .byte %11000011
+  .byte %11000011
+  .byte $00, $00, $00, $00, $00, $00, $00, $00
 
-;*********************************************
-; NMI Interrupt
-;*********************************************
-NMI:
+  .byte %11111111	; E (01)
+  .byte %11111111
+  .byte %11000000
+  .byte %11111100
+  .byte %11111100
+  .byte %11000000
+  .byte %11111111
+  .byte %11111111
+  .byte $00, $00, $00, $00, $00, $00, $00, $00
 
-  LDA #$00
-  STA $2003       ; set the low byte (00) of the RAM address
-  LDA #$02
-  STA $4014       ; set the high byte (02) of the RAM address, start the transfer
+  .byte %11000000	; L (02)
+  .byte %11000000
+  .byte %11000000
+  .byte %11000000
+  .byte %11000000
+  .byte %11000000
+  .byte %11111111
+  .byte %11111111
+  .byte $00, $00, $00, $00, $00, $00, $00, $00
 
+  .byte %01111110	; O (03)
+  .byte %11100111
+  .byte %11000011
+  .byte %11000011
+  .byte %11000011
+  .byte %11000011
+  .byte %11100111
+  .byte %01111110
+  .byte $00, $00, $00, $00, $00, $00, $00, $00`;
 
+const config = { code: codeSource, executable: 'C:\\cc65\\bin\\cl65', params: `--verbose --target nes -o ${outputBin}` };
 
-  RTI             ; return from interrupt
-
-;*********************************************
-; General Functions
-;*********************************************
-;*********************************************
-; VBlank Wait
-;*********************************************
-vblankwait:
-  BIT $2002
-  BPL vblankwait
-  RTS
-
-;*********************************************
-; Read Buttons
-;*********************************************
-
-  RTS
-
-;*********************************************
-; Bank 1 - DBs
-;*********************************************
-  .bank 1
-  .org $E000
-
-palette:
-
-  .db $0F,$31,$32,$33,$34,$35,$36,$37,$38,$39,$3A,$3B,$3C,$3D,$3E,$0F
-  .db $0F,$1C,$15,$14,$31,$02,$38,$3C,$0F,$1C,$15,$14,$31,$02,$38,$3C
-
-sprites:
-     ; X  tile  attr  Y
-  .db $60, $11, $00, $68   ; H
-  .db $60, $0E, $00, $70   ; E
-  .db $60, $15, $00, $78   ; L
-  .db $60, $15, $00, $80   ; L
-  .db $60, $18, $00, $88   ; O
-  .db $70, $20, $00, $68   ; W
-  .db $70, $18, $00, $70   ; O
-  .db $70, $1B, $00, $78   ; R
-  .db $70, $15, $00, $80   ; L
-  .db $70, $0D, $00, $88   ; D
-
-
-  .org $FFFA     ;first of the three vectors starts here
-  .dw NMI        ;when an NMI happens (once per frame if enabled) the
-  .dw RESET      ;when the processor first turns on or is reset, it will jump
-  .dw 0          ;external interrupt IRQ is not used in this tutorial
-
-;*********************************************
-; Bank 2 - Graphic Binary
-;*********************************************
-  .bank 2
-
-  .org $0000
-
-  .incbin "C:\\temp\\nes\\hello\\mario.chr"   ;includes 8KB graphics file from SMB1
-`;
-
-const nesasmConfig = { code: asm, executable: 'NESASM3' };
-const cc65Config = { code: asm, executable: 'cc65', params: '--verbose --target nes -o demo.nes' };
-
-builder(nesasmConfig)
+builder(config)
   .then(() => {
     const fceux = new Fceux({ bin: 'C:\\Users\\davidv\\Documents\\fceux\\fceux.exe' });
-    fceux.start(nesFile);
-  })
-  .catch(error);
-
-builder(cc65Config)
-  .then(() => {
-    const fceux = new Fceux({ bin: 'C:\\Users\\davidv\\Documents\\fceux\\fceux.exe' });
-    fceux.start(nesFile);
+    fceux.start(outputBin);
   })
   .catch(error);

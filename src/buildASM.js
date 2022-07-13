@@ -1,10 +1,21 @@
-import { readFile } from 'fs/promises';
+import path from 'path';
 import builder from '#src/lib/builder';
 
-const { log } = console;
-log('arg ', process.argv);
+const { parse, join } = path;
 
-readFile(process.argv[2])
-  .then((data) => {
-    log(JSON.parse(data));
-  });
+const build = ({ configFile }) => {
+  const { log, error } = console;
+
+  let config = {};
+  import(`../${configFile}`)
+    .then((data) => {
+      config = { ...data.default };
+      log('config', config);
+      config.file = `${join(parse(configFile).dir, config.file)}`;
+      log('config', config);
+      builder(config)
+        .catch(error);
+    });
+};
+
+build({ configFile: process.argv[2] });
