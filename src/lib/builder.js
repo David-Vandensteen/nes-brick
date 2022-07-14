@@ -13,7 +13,7 @@ export default ({
 }) => new Promise((resolve, reject) => {
   let pFile = file;
   if (code) {
-    pFile = join(process.env.TEMP || '/tmp', `nesbrick-${uid()}.asm`);
+    pFile = join(process.env.TEMP || '/tmp', `nesbrick-${uid()}.s`);
     log('spool asm code into ', pFile);
     try {
       writeFileSync(pFile, code);
