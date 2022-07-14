@@ -164,11 +164,11 @@ palettes:
 const config = {
   emulator: {
     file: `${process.env.TEMP}\\hello.nes`,
-    executable: 'C:\\Users\\davidv\\Documents\\fceux\\fceux.exe',
+    executable: `${process.env.TEMP}\\nes-brick\\fceux\\fceux.exe`,
   },
   builder: {
     code: codeSource,
-    executable: 'C:\\cc65\\bin\\cl65',
+    executable: `${process.env.TEMP}\\nes-brick\\cc65\\bin\\cl65`,
     params: `--verbose --target nes -o ${outputBin}`,
   },
 };
